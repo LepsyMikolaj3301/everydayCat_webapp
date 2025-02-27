@@ -5,7 +5,7 @@ from datetime import datetime
 import requests
 from dotenv import load_dotenv
 import json
-
+import time
 
 # creating a Flask application 
 
@@ -41,7 +41,8 @@ def get_posts() -> list:
 
 class CurrentPhotos():
     def __init__(self):
-        self._current_day_cats: list = json.load(IMAGE_DIR + 'current_day_cats.json')
+        with open(IMAGE_DIR + 'current_day_cats.json', 'r') as cat_file:
+            self._current_day_cats: list = json.load(cat_file)
         self._cur_cat_index = 1
         self._current_cat = self._current_day_cats[0]  
         
@@ -96,26 +97,32 @@ class CurrentPhotos():
 
 # Schedule all tasks:
 cur_ph = CurrentPhotos()
-schedule.every().hour.do(cur_ph.update_cur_image())
+schedule.every().second.do(cur_ph.update_cur_image)
 # Get 24 random cat images at midnight
-schedule.every().day.at('23:55').do(cur_ph.update_images_dir())
- 
-    
+schedule.every().day.at('23:55').do(cur_ph.update_images_dir)
+
+
 @app.route("/") 
 def home(): 
     
+    schedule.run_pending()
     cat = cur_ph.get_curr_cat()
-    cat_description = 
+    # time.sleep(10)
+    
     
     return render_template('home.html',  
-                           cat_foto=cat['url']) 
+                           cat_photo=cat['url']) 
   
 def test():
     # update_images_dir()
+    cat = cur_ph.get_curr_cat()
+    print(cat['url'])
+    print(type(cat['url']))
     pass
     
     
 # run the application 
 if __name__ == "__main__": 
-    # app.run(debug=True)
-    test()
+    
+    app.run(debug=True)
+    # test()
